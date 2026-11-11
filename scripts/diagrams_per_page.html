@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PrajaDigital - Spesifikasi Visual Diagram UML & ERD (Full Page)</title>
+  
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  
+  <!-- Mermaid JS (Local with CDN Fallback) -->
+  <script src="mermaid.min.js"></script>
+  <script>
+    if (typeof mermaid === 'undefined') {
+      document.write('<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"><\/script>');
+    }
+  </script>
+
+  <style>
+    /* ==========================================================================
+       CSS RESET & BASE TYPOGRAPHY
+       ========================================================================== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f172a;
+      color: #1e293b;
+      line-height: 1.5;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    /* ==========================================================================
+       PRINT SETUP: A4 LANDSCAPE (1 DIAGRAM PER HALAMAN PENUH)
+       ========================================================================== */
+    @page {
+      size: A4 landscape;
+      margin: 8mm 10mm 8mm 10mm;
+    }
+
+    .diagram-page {
+      background: #ffffff;
+      width: 100%;
+      height: 190mm;
+      max-height: 190mm;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      page-break-inside: avoid;
+      break-inside: avoid;
+      overflow: hidden;
+    }
+
+    /* Page break HANYA di antara halaman (mencegah halaman kosong di akhir) */
+    .diagram-page + .diagram-page {
+      page-break-before: always;
+      break-before: page;
+    }
+
+    @media print {
+      html, body {
+        width: 100% !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+      }
+      .diagram-page {
+        width: 100% !important;
+        height: 190mm !important;
+        max-height: 190mm !important;
+        min-height: 190mm !important;
+        padding: 8px 12px !important;
+        margin: 0 !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        overflow: hidden !important;
+      }
+      .diagram-page + .diagram-page {
+        page-break-before: always !important;
+        break-before: page !important;
+      }
+    }
+
+    /* Screen display preview */
+    @media screen {
+      body {
+        padding: 30px 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
+      }
+      .diagram-page {
+        width: 297mm;
+        height: 210mm;
+        min-height: 210mm;
+        border-radius: 12px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      }
+    }
+
+    /* ==========================================================================
+       HEADER & BANNER DESIGN
+       ========================================================================== */
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e2e8f0;
+      flex-shrink: 0;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-badge {
+      background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+      color: white;
+      font-weight: 800;
+      font-size: 15px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+    }
+
+    .title-group h1 {
+      font-size: 17px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.3px;
+    }
+
+    .title-group p {
+      font-size: 11px;
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    .page-indicator {
+      text-align: right;
+    }
+
+    .page-pill {
+      display: inline-block;
+      background: #f1f5f9;
+      color: #475569;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid #cbd5e1;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .doc-meta {
+      font-size: 10px;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+
+    /* ==========================================================================
+       DIAGRAM CANVAS CONTAINER
+       ========================================================================== */
+    .diagram-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 8px 0;
+      width: 100%;
+      height: calc(100% - 75px);
+      overflow: hidden;
+    }
+
+    .diagram-wrapper {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .diagram-wrapper svg {
+      max-width: 100% !important;
+      max-height: 100% !important;
+      height: auto !important;
+      width: auto !important;
+      filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.04));
+    }
+
+    /* Double diagram on page 2 */
+    .dual-diagram-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 16px;
+      width: 100%;
+      height: 100%;
+    }
+
+    .sub-diagram-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .sub-diagram-card h3 {
+      font-size: 12px;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 6px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .sub-diagram-card .diagram-wrapper {
+      flex: 1;
+    }
+
+    /* ==========================================================================
+       FOOTER DESIGN
+       ========================================================================== */
+    .page-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 6px;
+      border-top: 1px solid #e2e8f0;
+      font-size: 9.5px;
+      color: #64748b;
+      flex-shrink: 0;
+    }
+
+    .footer-left {
+      display: flex;
+      gap: 16px;
+    }
+
+    .footer-badge {
+      font-weight: 600;
+      color: #0f172a;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================================================
+       HALAMAN 1: USE CASE DIAGRAM
+       ========================================================================== -->
+  <section class="diagram-page" id="page-1">
+    <header class="page-header">
+      <div class="brand-section">
+        <div class="logo-badge">PRAJADIGITAL</div>
+        <div class="title-group">
+          <h1>USE CASE DIAGRAM: INTERAKSI 5 AKTOR & FITUR SISTEM</h1>
+          <p>Sistem Informasi & Pelayanan Publik Cerdas Desa Lemahabang, Cirebon</p>
+        </div>
+      </div>
+      <div class="page-indicator">
+        <span class="page-pill">HALAMAN 1 DARI 5</span>
+        <div class="doc-meta">UML Specification &bull; Standar ISO/IEC 29148</div>
+      </div>
+    </header>
+
+    <main class="diagram-body">
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+flowchart LR
+    %% Actors Definition
+    subgraph Aktor["Hierarki Aktor Pengguna"]
+        warga["👤 Warga Desa<br/>(Penduduk Pemohon)"]
+        rt["👔 Ketua RT<br/>(Verifikator Tingkat 1)"]
+        rw["🎖️ Ketua RW<br/>(Verifikator Tingkat 2)"]
+        admin["🏛️ Admin Desa<br/>(Penandatangan Final)"]
+        sa["⚡ Super Admin<br/>(Pengelola Sistem)"]
+    end
+
+    %% Boundary Sistem
+    subgraph Sistem["Batas Sistem Aplikasi PrajaDigital"]
+        UC01(["UC-01: Registrasi & Profiling NIK/KK"])
+        UC02(["UC-02: Pengajuan 7 Jenis Surat Mandiri"])
+        UC03(["UC-03: Pelacakan Status & Unduh Berkas PDF"])
+        UC04(["UC-04: Approval Tingkat 1 Ketua RT"])
+        UC05(["UC-05: Approval Tingkat 2 Ketua RW"])
+        UC06(["UC-06: Verifikasi Akhir & Penerbitan Surat"])
+        UC07(["UC-07: Konsultasi Asisten AI Gemini"])
+        UC08(["UC-08: Dashboard Analitik Kependudukan"])
+        UC09(["UC-09: Manajemen Master Data Warga & KK"])
+        UC10(["UC-10: Konfigurasi API Gateway (/konfigurasi)"])
+        UC11(["UC-11: Pemantauan Audit Log Aktivitas"])
+    end
+
+    %% Relations
+    warga --> UC01
+    warga --> UC02
+    warga --> UC03
+    warga --> UC07
+
+    rt --> UC04
+    rt --> UC03
+    rt --> UC07
+    rt --> UC08
+
+    rw --> UC05
+    rw --> UC03
+    rw --> UC07
+    rw --> UC08
+
+    admin --> UC06
+    admin --> UC03
+    admin --> UC07
+    admin --> UC08
+    admin --> UC09
+
+    sa --> UC10
+    sa --> UC11
+    sa --> UC06
+    sa --> UC08
+
+    %% Styling
+    style warga fill:#eff6ff,stroke:#3b82f6,stroke-width:2px,color:#1e3a8a
+    style rt fill:#f0fdf4,stroke:#22c55e,stroke-width:2px,color:#14532d
+    style rw fill:#fefce8,stroke:#eab308,stroke-width:2px,color:#713f12
+    style admin fill:#faf5ff,stroke:#a855f7,stroke-width:2px,color:#581c87
+    style sa fill:#fff1f2,stroke:#f43f5e,stroke-width:2px,color:#881337
+
+    style UC06 fill:#dbeafe,stroke:#2563eb,stroke-width:2px
+    style UC07 fill:#ede9fe,stroke:#7c3aed,stroke-width:2px
+    style UC10 fill:#ffe4e6,stroke:#e11d48,stroke-width:2px
+        </pre>
+      </div>
+    </main>
+
+    <footer class="page-footer">
+      <div class="footer-left">
+        <span>Arsitektur: <strong class="footer-badge">Role-Based Access Control (RBAC 5 Role)</strong></span>
+        <span>Framework: <strong class="footer-badge">Laravel 13 &bull; PHP 8.5</strong></span>
+      </div>
+      <div>Dokumen Resmi Proyek Akhir RPL &bull; TIKB2503021</div>
+    </footer>
+  </section>
+
+
+  <!-- ==========================================================================
+       HALAMAN 2: ACTIVITY DIAGRAM
+       ========================================================================== -->
+  <section class="diagram-page" id="page-2">
+    <header class="page-header">
+      <div class="brand-section">
+        <div class="logo-badge">PRAJADIGITAL</div>
+        <div class="title-group">
+          <h1>ACTIVITY DIAGRAM: WORKFLOW 3-TIER APPROVAL & AI PROCESSING</h1>
+          <p>Alur Logika State Machine Pengesahan Surat dan Orkestrasi Chatbot Gemini</p>
+        </div>
+      </div>
+      <div class="page-indicator">
+        <span class="page-pill">HALAMAN 2 DARI 5</span>
+        <div class="doc-meta">UML Specification &bull; Standar ISO/IEC 29148</div>
+      </div>
+    </header>
+
+    <main class="diagram-body">
+      <div class="dual-diagram-grid">
+        <!-- Sub-Diagram 1: Approval Workflow -->
+        <div class="sub-diagram-card">
+          <h3><span>📋</span> (A) Alur Bisnis Pengajuan & Approval Surat 3-Tier</h3>
+          <div class="diagram-wrapper">
+            <pre class="mermaid">
+stateDiagram-v2
+    [*] --> FormWarga: Warga Isi Form & Unggah KTP/KK
+    FormWarga --> Validasi: Klik 'Kirim Pengajuan'
+    
+    state Validasi <<choice>>
+    Validasi --> FormWarga: Gagal (File > 2MB / Kosong)
+    Validasi --> MenungguRT: Valid (Status: MENUNGGU_RT)
+
+    MenungguRT --> TinjauRT: Ketua RT Meninjau Berkas
+    state TinjauRT <<choice>>
+    TinjauRT --> Ditolak: Ditolak RT (+ Alasan)
+    TinjauRT --> MenungguRW: Disetujui RT (Status: MENUNGGU_RW)
+
+    MenungguRW --> TinjauRW: Ketua RW Meninjau Berkas
+    state TinjauRW <<choice>>
+    TinjauRW --> Ditolak: Ditolak RW (+ Alasan)
+    TinjauRW --> MenungguDesa: Disetujui RW (Status: MENUNGGU_ADMIN_DESA)
+
+    MenungguDesa --> TinjauDesa: Admin Desa Validasi Final
+    state TinjauDesa <<choice>>
+    TinjauDesa --> Ditolak: Ditolak Desa
+    TinjauDesa --> Penerbitan: Disetujui (Status: SELESAI)
+
+    state Penerbitan {
+        [*] --> GenerateNomor: Terbitkan Nomor Surat Resmi
+        GenerateNomor --> DomPDF: Kompilasi Template PDF A4
+        DomPDF --> SaveDisk: Simpan PDF di Storage Publik
+        SaveDisk --> NotifEmail: Kirim Lampiran SuratSelesaiMail
+        NotifEmail --> NotifWA: Kirim Notifikasi Teks Fonnte WA
+        NotifWA --> [*]
+    }
+
+    Ditolak --> NotifWAPenolakan: Kirim Pesan Penolakan via WhatsApp
+    NotifWAPenolakan --> [*]
+    Penerbitan --> SiapUnduh: Surat Siap Diunduh Warga (PDF)
+    SiapUnduh --> [*]
+            </pre>
+          </div>
+        </div>
+
+        <!-- Sub-Diagram 2: AI Processing Pipeline -->
+        <div class="sub-diagram-card">
+          <h3><span>🤖</span> (B) Alur Pemrosesan Chatbot AI Gemini (Context Injection)</h3>
+          <div class="diagram-wrapper">
+            <pre class="mermaid">
+flowchart TD
+    A([User Input Chat]) --> B[AiAssistantController]
+    B --> C[GeminiService: Context Injection]
+    
+    subgraph DataRealtime["Injeksi Data Real-Time DB"]
+        D1[(Tabel users: Akun & Pejabat)]
+        D2[(Tabel warga: Total Penduduk)]
+        D3[(Tabel pengajuan: Rekap Surat)]
+        D4[(Tabel rt/rw: Nama Pimpinan)]
+    end
+    
+    D1 & D2 & D3 & D4 --> C
+    C --> E[Bentuk System Instruction + Guardrails]
+    E --> F[Panggil Google AI Studio API]
+    
+    subgraph Failover["Mekanisme Resiliensi"]
+        F --> G{HTTP 200 OK?}
+        G -- Ya --> H[Ekstrak Jawaban Teks]
+        G -- Timeout/Fail --> I[Failover ke gemini-3.5-flash-lite]
+        I --> H
+    end
+    
+    H --> J[Kirim JSON Payload ke Frontend]
+    J --> K[Render Markdown di Widget UI]
+    K --> L([Pesan Tampil ke User])
+
+    style C fill:#eff6ff,stroke:#2563eb
+    style E fill:#fef3c7,stroke:#d97706
+    style F fill:#f3e8ff,stroke:#9333ea
+            </pre>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="page-footer">
+      <div class="footer-left">
+        <span>Transisi Status: <strong class="footer-badge">MENUNGGU_RT &rarr; MENUNGGU_RW &rarr; MENUNGGU_ADMIN_DESA &rarr; SELESAI</strong></span>
+        <span>AI Engine: <strong class="footer-badge">Gemini 3.x Flash-Lite (Timeout 35s, Retry 2x)</strong></span>
+      </div>
+      <div>Dokumen Resmi Proyek Akhir RPL &bull; TIKB2503021</div>
+    </footer>
+  </section>
+
+
+  <!-- ==========================================================================
+       HALAMAN 3: CLASS DIAGRAM
+       ========================================================================== -->
+  <section class="diagram-page" id="page-3">
+    <header class="page-header">
+      <div class="brand-section">
+        <div class="logo-badge">PRAJADIGITAL</div>
+        <div class="title-group">
+          <h1>CLASS DIAGRAM: STRUKTUR KELAS & CLEAN ARCHITECTURE</h1>
+          <p>Pemetaan Berorientasi Objek: Controller, Service Layer, Eloquent Model, dan Mail</p>
+        </div>
+      </div>
+      <div class="page-indicator">
+        <span class="page-pill">HALAMAN 3 DARI 5</span>
+        <div class="doc-meta">UML Specification &bull; Standar ISO/IEC 29148</div>
+      </div>
+    </header>
+
+    <main class="diagram-body">
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+classDiagram
+    %% Base Controller
+    class Controller {
+        <<abstract>>
+        +authorize(ability, arguments)
+    }
+
+    %% HTTP Controllers
+    class PengajuanSuratController {
+        +index(Request request) View
+        +create() View
+        +store(Request request) RedirectResponse
+        +show(PengajuanSurat surat) View
+        +handleAction(Request request, PengajuanSurat surat) RedirectResponse
+        -handleApproval(PengajuanSurat surat) RedirectResponse
+        -handleRejection(PengajuanSurat surat, String catatan) RedirectResponse
+        -generatePdf(PengajuanSurat surat) void
+        -sendEmailSuratSelesai(PengajuanSurat surat) void
+        -resolvePdfView(PengajuanSurat surat) String
+        +download(PengajuanSurat surat) BinaryFileResponse
+    }
+
+    class KonfigurasiController {
+        +ALLOWED_AI_MODELS : Array
+        +SETTING_AI_KEY : String
+        +SETTING_AI_MODEL : String
+        +SETTING_WA_TOKEN : String
+        +index() View
+        +updateAi(Request request) RedirectResponse
+        +updateWhatsapp(Request request) RedirectResponse
+        +testAi(Request request) JsonResponse
+        +testWa(Request request) JsonResponse
+        +resolveAiApiKey() String
+        +resolveAiModel() String
+        -probeGeminiApiKey(String key, String model) Array
+        -authorizeSuperAdmin() void
+        -writeAuditLog(String activity, Request req) void
+    }
+
+    class AiAssistantController {
+        -GeminiService geminiService
+        +chat(Request request) JsonResponse
+    }
+
+    %% Service Layer
+    class GeminiService {
+        +REQUEST_TIMEOUT : int = 35
+        +DEFAULT_MODEL : String = "gemini-3.5-flash-lite"
+        -AiChatContextService contextService
+        +buildSystemInstruction(User user, String msg) String
+        +generateResponse(User user, String msg, Array history) String
+    }
+
+    class WhatsappNotificationService {
+        +notifyStatusUpdate(PengajuanSurat surat, String status) bool
+        +sendCustomMessage(String phone, String text) bool
+        -formatPhoneNumber(String phone) String
+    }
+
+    class SettingService {
+        +get(String key, mixed default) mixed
+        +set(String key, mixed value, bool encrypt, String group) bool
+        +hasInDatabase(String key) bool
+        +maskSecret(String secret) String
+    }
+
+    %% Eloquent Models
+    class User {
+        +int id
+        +String name
+        +String email
+        +String password
+        +int role_id
+        +hasRole(String roleName) bool
+        +warga() HasOne
+        +role() BelongsTo
+    }
+
+    class PengajuanSurat {
+        +int id
+        +int warga_id
+        +int template_id
+        +String nomor_surat
+        +String status
+        +String catatan
+        +int approved_by
+        +timestamp approved_at
+        +timestamp approved_by_admin_desa_at
+        +String file_pdf
+        +warga() BelongsTo
+        +template() BelongsTo
+        +approver() BelongsTo
+    }
+
+    class Warga {
+        +int id
+        +String nik
+        +String nomor_kk
+        +String nama_lengkap
+        +String alamat
+        +int rw_id
+        +int rt_id
+        +user() BelongsTo
+        +rw() BelongsTo
+        +rt() BelongsTo
+    }
+
+    class SuratSelesaiMail {
+        +PengajuanSurat surat
+        +String pdfPath
+        +build() Mailable
+    }
+
+    %% Relationships
+    Controller <|-- PengajuanSuratController
+    Controller <|-- KonfigurasiController
+    Controller <|-- AiAssistantController
+
+    PengajuanSuratController ..> GeminiService : Uses
+    PengajuanSuratController ..> WhatsappNotificationService : Triggers
+    PengajuanSuratController ..> SuratSelesaiMail : Sends
+    PengajuanSuratController --> PengajuanSurat : Mutates
+
+    KonfigurasiController ..> SettingService : Encrypts
+    AiAssistantController ..> GeminiService : Delegates
+
+    PengajuanSurat --> Warga : BelongsTo
+    Warga --> User : Associated
+        </pre>
+      </div>
+    </main>
+
+    <footer class="page-footer">
+      <div class="footer-left">
+        <span>Prinsip: <strong class="footer-badge">SOLID &bull; Dependency Inversion &bull; Separation of Concerns</strong></span>
+        <span>Dokumen Engine: <strong class="footer-badge">DomPDF v3.1 (7 Template Kedinasan)</strong></span>
+      </div>
+      <div>Dokumen Resmi Proyek Akhir RPL &bull; TIKB2503021</div>
+    </footer>
+  </section>
+
+
+  <!-- ==========================================================================
+       HALAMAN 4: SEQUENCE DIAGRAM
+       ========================================================================== -->
+  <section class="diagram-page" id="page-4">
+    <header class="page-header">
+      <div class="brand-section">
+        <div class="logo-badge">PRAJADIGITAL</div>
+        <div class="title-group">
+          <h1>SEQUENCE DIAGRAM: DISPOSISI FINAL TIER 3 & PENERBITAN SURAT</h1>
+          <p>Alur Interaksi Pesan: Klien, Middleware, Controller, DomPDF, SMTP, dan Fonnte WA</p>
+        </div>
+      </div>
+      <div class="page-indicator">
+        <span class="page-pill">HALAMAN 4 DARI 5</span>
+        <div class="doc-meta">UML Specification &bull; Standar ISO/IEC 29148</div>
+      </div>
+    </header>
+
+    <main class="diagram-body">
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Admin as 🏛️ Admin Desa (Lurah)
+    participant Browser as 💻 Web Browser
+    participant Router as 🛡️ Middleware & Router
+    participant Controller as ⚙️ PengajuanSuratController
+    participant Model as 📦 PengajuanSurat (Model)
+    participant DB as 🗄️ MySQL Database ('rpl')
+    participant DomPDF as 📄 DomPDF Rendering Engine
+    participant Mailer as ✉️ SuratSelesaiMail (SMTP)
+    participant WA as 📲 WhatsappNotificationService
+    participant Fonnte as ☁️ Fonnte Cloud Gateway
+
+    Admin->>Browser: Klik tombol 'Terbitkan Surat Resmi'
+    Browser->>Router: POST /surat/{id}/approval (action=approve)
+    Router->>Router: Verifikasi Middleware Auth & Spatie RBAC ('admin_desa')
+    Router->>Controller: handleAction(request, surat)
+    
+    activate Controller
+    Controller->>Controller: handleApproval(surat)
+    Controller->>Model: Cek Status Aktif ('MENUNGGU_ADMIN_DESA')
+    Controller->>Controller: Generate Nomor Surat: '470/{id}/RW.{rw}/{year}'
+    
+    Controller->>Model: update([status='SELESAI', approved_by_admin_desa_at=now()])
+    activate Model
+    Model->>DB: UPDATE pengajuan_surat SET status='SELESAI'...
+    DB-->>Model: Query OK (Row Updated)
+    deactivate Model
+
+    %% PDF Generation
+    Controller->>Controller: generatePdf(surat)
+    Controller->>Controller: resolvePdfView(surat) -> 'surat.pdf.sktm'
+    Controller->>DomPDF: loadView('surat.pdf.sktm', compact('surat'))
+    activate DomPDF
+    DomPDF->>DomPDF: Render HTML/CSS to Binary Stream A4
+    DomPDF-->>Controller: Return Raw PDF Buffer
+    deactivate DomPDF
+    Controller->>Controller: Simpan PDF di storage/app/public/surat_xxx.pdf
+
+    %% Dispatch Email
+    Controller->>Controller: sendEmailSuratSelesai(surat)
+    activate Mailer
+    Controller->>Mailer: Mail::to(warga_email)->send(new SuratSelesaiMail(pdf))
+    Mailer-->>Controller: Dispatched via SMTP (Port 587)
+    deactivate Mailer
+
+    %% Dispatch WhatsApp
+    Controller->>WA: notifyStatusUpdate(surat, 'SELESAI')
+    activate WA
+    WA->>WA: formatPhoneNumber(warga->nomor_telepon)
+    WA->>Fonnte: HTTP POST https://api.fonnte.com/send (Token, Target, Pesan)
+    Fonnte-->>WA: Return JSON {status: true, id: 'msg_123'}
+    WA-->>Controller: WhatsApp Dispatched
+    deactivate WA
+
+    Controller-->>Browser: Redirect /surat/{id} (Flash: 'Pengajuan surat berhasil diproses')
+    deactivate Controller
+    Browser-->>Admin: Render UI Updated (Badge SELESAI & Tombol 'Unduh PDF' Aktif)
+        </pre>
+      </div>
+    </main>
+
+    <footer class="page-footer">
+      <div class="footer-left">
+        <span>Protokol: <strong class="footer-badge">HTTPS / TLS 1.3 &bull; REST API &bull; SMTP Port 587</strong></span>
+        <span>Respon Payload: <strong class="footer-badge">Synchronous Controller + Asynchronous Notif</strong></span>
+      </div>
+      <div>Dokumen Resmi Proyek Akhir RPL &bull; TIKB2503021</div>
+    </footer>
+  </section>
+
+
+  <!-- ==========================================================================
+       HALAMAN 5: ENTITY RELATIONSHIP DIAGRAM (ERD)
+       ========================================================================== -->
+  <section class="diagram-page" id="page-5">
+    <header class="page-header">
+      <div class="brand-section">
+        <div class="logo-badge">PRAJADIGITAL</div>
+        <div class="title-group">
+          <h1>ENTITY RELATIONSHIP DIAGRAM (ERD): BASIS DATA 'RPL'</h1>
+          <p>Skema Relasional Fisik MySQL: Integritas Referensial Kunci Asing & Constraints</p>
+        </div>
+      </div>
+      <div class="page-indicator">
+        <span class="page-pill">HALAMAN 5 DARI 5</span>
+        <div class="doc-meta">UML Specification &bull; Standar ISO/IEC 29148</div>
+      </div>
+    </header>
+
+    <main class="diagram-body">
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+erDiagram
+    ROLES ||--o{ USERS : "assigned_to"
+    DESA ||--o{ RW : "has_many"
+    RW ||--o{ RT : "has_many"
+    RW ||--o{ WARGA : "encompasses"
+    RT ||--o{ WARGA : "encompasses"
+    USERS ||--o| WARGA : "identified_as"
+    
+    SURAT_TEMPLATES ||--o{ PENGAJUAN_SURAT : "template_of"
+    WARGA ||--o{ PENGAJUAN_SURAT : "submits"
+    USERS ||--o{ PENGAJUAN_SURAT : "approves"
+
+    ROLES ||--o{ ROLE_PERMISSION : "contains"
+    PERMISSIONS ||--o{ ROLE_PERMISSION : "assigned_to"
+
+    KELUARGA ||--o{ KELUARGA_MEMBERS : "has"
+    WARGA ||--o{ KELUARGA_MEMBERS : "belongs_to"
+
+    USERS ||--o{ AUDIT_LOGS : "logs_activity"
+
+    ROLES {
+        bigint id PK
+        string name UK
+        string description
+        timestamp created_at
+    }
+
+    USERS {
+        bigint id PK
+        string name
+        string email UK
+        string password
+        bigint role_id FK
+        bigint rw_id FK
+        bigint rt_id FK
+        boolean is_active
+        timestamp created_at
+    }
+
+    WARGA {
+        bigint id PK
+        string nik UK
+        string nomor_kk
+        string nama_lengkap
+        enum jenis_kelamin
+        string tempat_lahir
+        date tanggal_lahir
+        text alamat
+        bigint rw_id FK
+        bigint rt_id FK
+        string nomor_telepon
+        string email
+        boolean status_aktif
+        timestamp created_at
+    }
+
+    PENGAJUAN_SURAT {
+        bigint id PK
+        bigint warga_id FK
+        bigint template_id FK
+        string nomor_surat UK
+        json data_tambahan
+        enum status
+        text catatan
+        bigint approved_by FK
+        timestamp approved_at
+        timestamp approved_by_admin_desa_at
+        string file_pdf
+        timestamp created_at
+    }
+
+    SURAT_TEMPLATES {
+        bigint id PK
+        string kode_surat UK
+        string nama_surat
+        text deskripsi
+        json form_fields
+        boolean status_aktif
+    }
+
+    SYSTEM_SETTINGS {
+        bigint id PK
+        string key UK
+        mediumtext value
+        boolean is_encrypted
+        string group
+        string description
+        timestamp updated_at
+    }
+
+    AUDIT_LOGS {
+        bigint id PK
+        bigint user_id FK
+        string activity
+        string model_type
+        bigint model_id
+        string ip_address
+        timestamp created_at
+    }
+        </pre>
+      </div>
+    </main>
+
+    <footer class="page-footer">
+      <div class="footer-left">
+        <span>Engine Basis Data: <strong class="footer-badge">MySQL 8.0/8.4 &bull; InnoDB Engine</strong></span>
+        <span>Karakteristik Skema: <strong class="footer-badge">UTF-8 MB4 &bull; Foreign Key Strict OnDelete</strong></span>
+      </div>
+      <div>Dokumen Resmi Proyek Akhir RPL &bull; TIKB2503021</div>
+    </footer>
+  </section>
+
+  <!-- ==========================================================================
+       MERMAID INITIALIZATION WITH HIGH-DPI SVG SCALING
+       ========================================================================== -->
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      securityLevel: 'loose',
+      fontFamily: 'Inter, sans-serif',
+      fontSize: 12,
+      flowchart: {
+        htmlLabels: true,
+        curve: 'basis',
+        padding: 12
+      },
+      sequence: {
+        diagramMarginX: 10,
+        diagramMarginY: 10,
+        actorMargin: 30,
+        width: 140,
+        height: 45,
+        boxMargin: 10,
+        boxTextMargin: 5,
+        noteMargin: 10,
+        messageMargin: 20
+      },
+      state: {
+        sizeUnit: 'px',
+        padding: 10
+      },
+      er: {
+        layoutDirection: 'TB',
+        fontSize: 11
+      }
+    });
+
+    // Sinyal bahwa rendering telah siap
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        document.body.setAttribute('data-rendered', 'true');
+      }, 1500);
+    });
+  </script>
+</body>
+</html>
