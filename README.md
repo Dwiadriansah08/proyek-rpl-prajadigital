@@ -104,24 +104,6 @@ PrajaDigital mengintegrasikan model kecerdasan buatan (*Generative AI*) **Google
 
 ---
 
-## 📹 TAUTAN VIDEO PRESENTASI & DEMO FINAL
-
-Berikut adalah tautan rekaman video presentasi lengkap (kompilasi PRD/Konsep Aplikasi, Pemodelan UML/ERD & UI/UX Figma, serta Live Demo Aplikasi, AI, Testing & CI/CD):
-
-* **Video Presentasi & Demo Lengkap (YouTube):** [Tonton Video di YouTube](https://youtu.be/rgAz7eO2-8E?si=cQnNZiHRnqQB6gJ0) (https://youtu.be/rgAz7eO2-8E?si=cQnNZiHRnqQB6gJ0)
-
-> ⚠️ **Catatan Akses Video:** Tautan video telah disetel dalam status *Public* di YouTube demi kelancaran evaluasi dosen penguji.
-
----
---- | :--- | :---: | :--- |
-| **Progres 1** | **PRD & Konsep Aplikasi:** Latar belakang masalah birokrasi desa, perumusan solusi PrajaDigital, matriks 5 aktor, dan spesifikasi fungsional SRS. | 3–5 Menit | **`[LINK_YOUTUBE_VIDEO_PROGRES_1]`** *(Contoh: https://youtu.be/xxxxx)* |
-| **Progres 2** | **Pemodelan UML & UI/UX Figma:** Pembahasan mendalam 4 Diagram UML (Use Case, Activity, Class, Sequence) + ERD, serta visual antarmuka sistem. | 5–7 Menit | **`[LINK_YOUTUBE_VIDEO_PROGRES_2]`** *(Contoh: https://youtu.be/xxxxx)* |
-| **Progres 3 (Final)** | **Live Demo Aplikasi, Fitur AI, Testing & CI/CD:** Demonstrasi live alur pengajuan surat 3-tier, interaksi real-time Gemini AI, hasil 253 testing, & CI/CD Actions. | 8–12 Menit | **`[LINK_YOUTUBE_VIDEO_FINAL_DEMO]`** *(Contoh: https://youtu.be/xxxxx)* |
-
-> ⚠️ **Catatan Akses Video:** Seluruh tautan video disetel dalam status *Unlisted / Public* di YouTube atau *Anyone with the link can view* di Google Drive demi kelancaran evaluasi tim dosen penguji.
-
----
-
 ## 🚀 PANDUAN INSTALASI & MENJALANKAN SISTEM (SETUP INSTRUCTION)
 
 Ikuti langkah-langkah berikut untuk menjalankan project PrajaDigital di komputer lokal:
