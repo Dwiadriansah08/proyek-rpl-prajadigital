@@ -26,6 +26,100 @@
 Dokumen ini disusun sebagai pemenuhan **Laporan Proyek Akhir Mandiri** Mata Kuliah **Rekayasa Perangkat Lunak (TIKB2503021)** pada Program Studi Sarjana, **STMIK IKMI Cirebon**.
 
 | Komponen Identitas | Keterangan Rinci |
+| :--- | :--- |
+| **Nama Lengkap Mahasiswa** | **Mochammad Dwi Adriansah** |
+| **Nomor Induk Mahasiswa (NIM)**| **41257117** |
+| **Tema / Topik Kelompok** | **Sistem Informasi Desa (Smart Village / E-Government)** |
+| **Mata Kuliah** | Rekayasa Perangkat Lunak (TIKB2503021) |
+| **Dosen Pengampu** | **Yudhistira Arie Wijaya, M.Kom., CDS.** |
+| **Institusi Perguruan Tinggi** | STMIK IKMI Cirebon |
+| **Tahun Akademik** | 2025/2026 |
+| **Repositori GitHub** | [https://github.com/Dwiadriansah08/proyek-rpl-prajadigital](https://github.com/Dwiadriansah08/proyek-rpl-prajadigital) |
+
+---
+
+## 📖 DESKRIPSI APLIKASI: PRAJADIGITAL
+
+**PrajaDigital** adalah sistem informasi tata kelola pemerintahan dan pelayanan administrasi kependudukan terpadu yang dirancang khusus untuk **Desa Lemahabang**. Sistem ini mentransformasi alur birokrasi permohonan surat manual yang lambat, rentan pungli, dan membutuhkan kehadiran fisik menjadi ekosistem digital transparan dan efisien.
+
+### 🌟 Fitur Utama Sistem:
+1. **Alur Persetujuan Surat Berjenjang 3-Tier (Multi-Tier State Machine):**
+   * **Warga:** Mengajukan permohonan surat secara online dan memantau status secara *real-time*.
+   * **Ketua RT:** Memverifikasi berkas warga di wilayahnya (`MENUNGGU_RT` $\rightarrow$ `MENUNGGU_RW` atau `DITOLAK`).
+   * **Ketua RW:** Memverifikasi pengantar dari RT (`MENUNGGU_RW` $\rightarrow$ `MENUNGGU_ADMIN_DESA` atau `DITOLAK`).
+   * **Admin Desa (Kasi Pelayanan):** Melakukan persetujuan akhir dan penerbitan dokumen resmi desa (`MENUNGGU_ADMIN_DESA` $\rightarrow$ `SELESAI`).
+2. **Auto-Generate 7 Dokumen Surat Resmi (DomPDF):**
+   Penerbitan otomatis file PDF lengkap dengan format kop resmi desa, nomor surat otomatis format `470/{id}/RW.{rw}/{tahun}`, dan *QR-code verification*. Mencakup Surat Keterangan Domisili, SKU, SKTM, Kematian, Pengantar SKCK, Penghasilan, dan Pengantar Umum.
+3. **Notifikasi Omnichannel Otomatis (Email SMTP & WhatsApp Gateway Fonnte):**
+   Setiap transisi status mengirimkan teks notifikasi otomatis ke WhatsApp pemohon via Fonnte API dan melampirkan berkas PDF ke email warga melalui `SuratSelesaiMail`.
+4. **Pengumuman Publik Bertarget (Targeted Broadcast):**
+   Admin, RW, dan RT dapat menerbitkan pengumuman spesifik per desa, per RW, per RT, atau per role dengan integrasi siaran massal WhatsApp.
+5. **Manajemen Kependudukan Terstruktur:**
+   Pengelolaan master wilayah (Desa, RW, RT), data keluarga (Kartu Keluarga & anggota), master penduduk (NIK), dan akun pengguna dengan kontrol RBAC mandiri.
+
+---
+
+## 🤖 ARSITEKTUR & CARA KERJA FITUR AI (GOOGLE GEMINI REAL-TIME)
+
+PrajaDigital mengintegrasikan model kecerdasan buatan (*Generative AI*) **Google AI Studio (Gemini API)** melalui service layer `GeminiService.php` dan `AiAssistantController.php` untuk melayani konsultasi warga seputar syarat administrasi desa 24/7.
+
+```
++------------------+         +-------------------------------+         +-----------------------+
+|  Warga / User    |  AJAX   |   PrajaDigital Backend        |  HTTPS  |  Google AI Studio     |
+|  (Chat Widget)   | ------> |  - AiChatContextService       | ------> |  (Gemini API v1beta)  |
+|                  | <------ |  - VillageStatistikService    | <------ |  - gemini-3.5-flash   |
++------------------+  JSON   |  - System Instruction Inject  |  JSON   +-----------------------+
+                             +-------------------------------+                     |
+                                             | (Fallback / Timeout > 35s)          |
+                                             v                                     v
+                             +-------------------------------+         +-----------------------+
+                             |  Local Mock Response Engine   |         | Database rpl:         |
+                             |  (Offline Rule-Based Safety)  |         | - ai_conversations    |
+                             +-------------------------------+         | - ai_messages         |
+                                                                       +-----------------------+
+```
+
+### Keunggulan & Spesifikasi Fitur AI:
+* **Dynamic Context Injection:** Sebelum mengirim pertanyaan pengguna ke model Gemini, `AiChatContextService` menyuntikkan data kependudukan riil (nama desa, nama ketua RT/RW pengguna, statistik penduduk, dan daftar persyaratan 7 surat) ke dalam *System Instruction*.
+* **5 Model Resmi Aktif & Hemat Kuota:** Mendukung pilihan model fleksibel: `gemini-3.5-flash-lite` (Default Rekomendasi), `gemini-3.1-flash-lite`, `gemini-flash-lite-latest`, `gemini-3.6-flash`, dan `gemini-3.8-flash`.
+* **Zero-Crash Resilience & Fallback:** Dilengkapi batas waktu *timeout* 35 detik dan mekanisme *fallback* ke engine mock lokal apabila kuota API habis atau server eksternal tidak merespons, memastikan ketersediaan sistem tanpa henti.
+* **Keamanan Kredensial (AES-256):** API Key disimpan pada tabel `system_settings` dalam keadaan terenkripsi (*AES-256-CBC*) oleh `SettingService` dan di-masking pada UI Super Admin.
+
+---
+
+## 💻 TECH STACK & ARSITEKTUR
+
+| Komponen | Teknologi yang Digunakan | Peran dalam Sistem |
+| :--- | :--- | :--- |
+| **Backend Framework** | **Laravel Framework v13.17.x** | Core MVC Architecture & API Routing |
+| **Runtime Environment** | **PHP 8.5.0** (CLI & FPM) | Server-side execution engine |
+| **Database System** | **MySQL 8.0.x** (Database `rpl`) | RDBMS penyimpanan data relasional & audit logs |
+| **Frontend UI** | **Blade Engine + Tailwind CSS v3** | Responsive Glassmorphism Design & Dashboard |
+| **Client Interactivity** | **Alpine.js v3.4.2** | Komponen UI reaktif, modal dialog, & chat widget |
+| **Document Engine** | **barryvdh/laravel-dompdf v3.1** | Rendering template surat A4 & rekapitulasi PDF |
+| **External Integrations**| **Google Gemini API & Fonnte WA**| Generative AI Service & WhatsApp Notification Gateway |
+| **Automated Testing** | **PHPUnit 12.5.12** | 253 Unit, Feature, & State Machine Tests (100% Pass) |
+| **Code Style Linter** | **Laravel Pint v1.27** | Standar coding PSR-12 Clean Code |
+| **CI/CD Pipeline** | **GitHub Actions** | Otomatisasi pengujian, linting, & build verifikasi |
+
+---
+
+## 📹 TAUTAN VIDEO PRESENTASI & DEMO FINAL
+
+Berikut adalah tautan rekaman video presentasi lengkap (kompilasi PRD/Konsep Aplikasi, Pemodelan UML/ERD & UI/UX Figma, serta Live Demo Aplikasi, AI, Testing & CI/CD):
+
+* **Video Presentasi & Demo Lengkap (YouTube):** [Tonton Video di YouTube](https://youtu.be/rgAz7eO2-8E?si=cQnNZiHRnqQB6gJ0) (https://youtu.be/rgAz7eO2-8E?si=cQnNZiHRnqQB6gJ0)
+
+> ⚠️ **Catatan Akses Video:** Tautan video telah disetel dalam status *Public* di YouTube demi kelancaran evaluasi dosen penguji.
+
+---
+--- | :--- | :---: | :--- |
+| **Progres 1** | **PRD & Konsep Aplikasi:** Latar belakang masalah birokrasi desa, perumusan solusi PrajaDigital, matriks 5 aktor, dan spesifikasi fungsional SRS. | 3–5 Menit | **`[LINK_YOUTUBE_VIDEO_PROGRES_1]`** *(Contoh: https://youtu.be/xxxxx)* |
+| **Progres 2** | **Pemodelan UML & UI/UX Figma:** Pembahasan mendalam 4 Diagram UML (Use Case, Activity, Class, Sequence) + ERD, serta visual antarmuka sistem. | 5–7 Menit | **`[LINK_YOUTUBE_VIDEO_PROGRES_2]`** *(Contoh: https://youtu.be/xxxxx)* |
+| **Progres 3 (Final)** | **Live Demo Aplikasi, Fitur AI, Testing & CI/CD:** Demonstrasi live alur pengajuan surat 3-tier, interaksi real-time Gemini AI, hasil 253 testing, & CI/CD Actions. | 8–12 Menit | **`[LINK_YOUTUBE_VIDEO_FINAL_DEMO]`** *(Contoh: https://youtu.be/xxxxx)* |
+
+> ⚠️ **Catatan Akses Video:** Seluruh tautan video disetel dalam status *Unlisted / Public* di YouTube atau *Anyone with the link can view* di Google Drive demi kelancaran evaluasi tim dosen penguji.
+
 ---
 
 ## 🚀 PANDUAN INSTALASI & MENJALANKAN SISTEM (SETUP INSTRUCTION)
