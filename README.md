@@ -1,4 +1,4 @@
-<p align="center">
+﻿<p align="center">
   <img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="320" alt="Laravel Logo">
 </p>
 
@@ -245,20 +245,6 @@ php artisan test tests/Feature/GeminiAiAssistantTest.php
    Duration: 14.82s
    Status:   100% SUCCESS / ZERO REGRESSION
 ```
-
----
-
-## 📂 DOKUMENTASI LENGKAP PROYEK (FOLDER `docs/`)
-
-Seluruh berkas laporan teknis, spesifikasi formal, diagram resolusi tinggi, dan PDF resmi telah tersedia di direktori `docs/`:
-
-* **`docs/FINAL_REPORT_PRAJADIGITAL.md`**: Dokumen Laporan Akhir Utama Praktikum (Standar Akademik Bab I–V).
-* **`docs/00_FINAL_LAPORAN_UTAMA_PRAJADIGITAL.pdf`**: Berkas PDF resmi siap cetak laporan akhir lengkap dengan tata letak A4 (Margin 4-4-3-3 cm) dan 5 diagram *full page*.
-* **`docs/01_PRD_SRS_PRAJADIGITAL.md`** & **`.pdf`**: Dokumen Product Requirement Document / Software Requirements Specification (Standar IEEE 830 / ISO 29148).
-* **`docs/02_SDD_UML_PRAJADIGITAL.md`** & **`.pdf`**: Dokumen Software Design Description & Pemodelan Lengkap UML 2.5.
-* **`docs/02_UML_DIAGRAMS_FULLPAGE.pdf`**: Dokumen visual khusus berisikan 5 Diagram UML/ERD A4 Full Page resolusi tinggi.
-* **`docs/03_TESTING_DEVOPS_PRAJADIGITAL.md`**: Laporan Audit Penjaminan Mutu Perangkat Lunak (QA), TDD, dan CI/CD GitHub Actions.
-* **`docs/diagrams/`**: Berkas grafis diagram PNG mandiri (`01_usecase.png`, `02_activity.png`, `03_class.png`, `04_sequence.png`, `05_erd.png`).
 
 ---
 
